@@ -94,6 +94,7 @@ class LogoBadge(QWidget):
 # ================================================================ 侧栏卡片
 class WorkspaceCard(QWidget):
     clicked = Signal(str)
+    toggled = Signal(str, bool)     # wid, 是否整块选中
     action = Signal(str, str)      # wid, "unregister" | "delete-all"
 
     def __init__(self, workspace, parent: QWidget | None = None):
@@ -106,16 +107,25 @@ class WorkspaceCard(QWidget):
         self.setCursor(Qt.PointingHandCursor)
 
         self._more = GlyphButton("more", self, diameter=24)
-        self._more.move(self.width() - 32, 8)
+        self._more.move(self.width() - 58, 8)
         self._more.clicked.connect(self._open_menu)
         self._more.setVisible(False)
+
+        self._check = CheckGlyph(self)
+        self._check.move(self.width() - 32, 22)
+        self._check.toggled.connect(lambda value: self.toggled.emit(self.workspace.wid, value))
 
     def set_selected(self, value: bool) -> None:
         self._selected = value
         self.update()
 
+    def set_check_state(self, checked: bool, partial: bool) -> None:
+        self._check.set_checked(checked)
+        self._check.set_partial(partial)
+
     def resizeEvent(self, event) -> None:  # noqa: N802
-        self._more.move(self.width() - 32, 8)
+        self._more.move(self.width() - 58, 8)
+        self._check.move(self.width() - 32, 22)
         super().resizeEvent(event)
 
     def enterEvent(self, event) -> None:  # noqa: N802
@@ -189,14 +199,14 @@ class WorkspaceCard(QWidget):
         count = len(self.workspace.sessions)
         count_text = f"{count}个对话" if count else "没有对话"
         pill_w = metrics.horizontalAdvance(count_text) + 14
-        pill_rect = QRectF(self.width() - 12 - pill_w, 33, pill_w, 17)
+        pill_rect = QRectF(self.width() - 40 - pill_w, 33, pill_w, 17)
         pill_fill = theme.ACCENT_SOFT if self._selected else theme.SURFACE_STRONG
         theme.fill_rounded(painter, pill_fill, pill_rect, 8.5)
         painter.setFont(meta_font)
         painter.setPen(theme.ACCENT if self._selected else theme.MUTED)
         painter.drawText(pill_rect, int(Qt.AlignCenter), count_text)
 
-        path_width = max(20.0, self.width() - 52 - 12 - pill_w - 8)
+        path_width = max(20.0, self.width() - 52 - 40 - pill_w - 8)
         painter.setPen(theme.SUBTLE)
         painter.drawText(QRectF(52, 32, path_width, 18), int(Qt.AlignVCenter | Qt.AlignLeft),
                          theme.ellipsize(self.workspace.path, meta_font, int(path_width)))
@@ -382,6 +392,7 @@ class MainWindow(ChromeWindow):
         self.workspaces: list = []
         self.current_wid = ""
         self.selected: set[str] = set()
+        self.selected_ws: set[str] = set()
         self._rows: dict[str, ConversationRow] = {}
         self._cards: list[WorkspaceCard] = []
         self._scan_worker: ScanWorker | None = None
@@ -417,19 +428,16 @@ class MainWindow(ChromeWindow):
         self._cards_layout.setSpacing(6)
         self._cards_layout.addStretch(1)
 
-        self._open_dir = FlatButton("打开数据目录", primary=False, parent=self, height=34, auto_width=True)
-        self._open_dir.fit_to_text()
-        self._open_dir.move(12, 608)
+        self._open_dir = FlatButton("打开数据目录", primary=False, parent=self, height=34)
+        self._open_dir.setGeometry(12, 608, 104, 34)
         self._open_dir.clicked.connect(self._open_data_dir)
 
-        self._about = FlatButton("关于", primary=False, parent=self, height=34, auto_width=True)
-        self._about.fit_to_text()
-        self._about.move(12 + self._open_dir.width() + 8, 608)
+        self._about = FlatButton("关于", primary=False, parent=self, height=34)
+        self._about.setGeometry(124, 608, 104, 34)
         self._about.clicked.connect(self._show_about)
 
-        self._add_ws = FlatButton("添加工作区", primary=True, parent=self, height=34, auto_width=True)
-        self._add_ws.fit_to_text()
-        self._add_ws.move(12, 566)
+        self._add_ws = FlatButton("添加工作区", primary=True, parent=self, height=34)
+        self._add_ws.setGeometry(12, 566, 212, 34)
         self._add_ws.clicked.connect(self._add_workspace_dialog)
 
 
@@ -445,9 +453,7 @@ class MainWindow(ChromeWindow):
 
         self._restart_toggle = ToggleSwitch(self, self.settings.get_bool("restart_after_delete", True))
         self._restart_toggle.move(690, 70)
-        self._restart_toggle.toggled.connect(
-            lambda v: self.settings.set_bool("restart_after_delete", v)
-        )
+        self._restart_toggle.toggled.connect(self._on_restart_toggled)
 
         self._restart_label = QLabel("删除后自动重启 DSH", self)
         self._restart_label.setFont(theme.font(8.6))
@@ -516,10 +522,12 @@ class MainWindow(ChromeWindow):
         self._cancel_sel.clicked.connect(self._clear_selection)
         self._cancel_sel.set_enabled_state(False)
 
-        self._delete_btn = FlatButton("删除所选", primary=True, parent=self, auto_width=True)
+        self._delete_btn = FlatButton("删除并重启", primary=True, parent=self)
         self._delete_btn.setGeometry(772, 604, 204, 38)
         self._delete_btn.clicked.connect(self._delete_selected)
         self._delete_btn.set_enabled_state(False)
+        metrics = QFontMetricsF(self._delete_btn.font())
+        self._delete_btn.setFixedWidth(max(112, int(metrics.horizontalAdvance("删除并重启")) + 40))
 
         from PySide6.QtGui import QShortcut, QKeySequence
         QShortcut(QKeySequence("F5"), self, self.refresh)
@@ -546,6 +554,7 @@ class MainWindow(ChromeWindow):
         self._refresh.set_enabled_state(True)
         self.workspaces = workspaces
         self.selected.clear()
+        self.selected_ws.clear()
         wids = [w.wid for w in workspaces]
         if self.current_wid not in wids:
             self.current_wid = wids[0] if wids else ""
@@ -584,8 +593,10 @@ class MainWindow(ChromeWindow):
             card.clicked.connect(self._on_card_clicked)
             card.action.connect(self._on_card_action)
             card.set_selected(workspace.wid == self.current_wid)
+            card.toggled.connect(self._on_card_toggled)
             self._cards_layout.insertWidget(self._cards_layout.count() - 1, card)
             self._cards.append(card)
+        self._refresh_card_states()
 
     def _rebuild_rows(self) -> None:
         for row in self._rows.values():
@@ -612,18 +623,28 @@ class MainWindow(ChromeWindow):
 
     def _update_action_bar(self) -> None:
         n = len(self.selected)
-        self._delete_btn.set_text(f"删除所选（{n}）" if n else "删除所选")
-        self._delete_btn.set_enabled_state(n > 0 and not self._busy)
-        self._cancel_sel.set_enabled_state(n > 0)
+        w = len(self.selected_ws)
+        restart = self.settings.get_bool("restart_after_delete", True)
+        self._delete_btn.set_text("删除并重启" if restart else "删除")
+        self._delete_btn.set_enabled_state((n > 0 or w > 0) and not self._busy)
+        self._cancel_sel.set_enabled_state(n > 0 or w > 0)
         self._cancel_sel.fit_to_text()
         delete_x = 976 - self._delete_btn.width()
         self._delete_btn.move(delete_x, 604)
         self._cancel_sel.move(delete_x - 8 - self._cancel_sel.width(), 604)
-        self._sel_label.setText(f"已选{n}项" if n else "")
+        if n or w:
+            parts = []
+            if n:
+                parts.append(f"{n}个对话")
+            if w:
+                parts.append(f"{w}个工作区")
+            self._sel_label.setText("已选" + " · ".join(parts))
+        else:
+            self._sel_label.setText("")
         workspace = self._workspace(self.current_wid)
         if workspace is not None:
             note = " · 未登记到DSH，可从卡片⋯菜单添加" if workspace.unregistered else ""
-            if n == 0 and not workspace.unregistered:
+            if n == 0 and w == 0 and not workspace.unregistered:
                 note = " · 数据目录 " + self.dsh_home
             self._hint.setText(f"{workspace.title} · {len(workspace.sessions)}个对话" + note)
         self._sync_select_all()
@@ -632,8 +653,11 @@ class MainWindow(ChromeWindow):
         sids = [sid for sid in self._rows]
         if not sids:
             self._select_all.set_checked(False)
+            self._select_all.set_partial(False)
             return
-        self._select_all.set_checked(all(sid in self.selected for sid in sids))
+        chosen = sum(1 for sid in sids if sid in self.selected)
+        self._select_all.set_checked(chosen == len(sids))
+        self._select_all.set_partial(0 < chosen < len(sids))
 
     def _set_banner(self, message: str, tone: str, action: str = "", pin: bool = False) -> None:
         if pin:
@@ -650,7 +674,6 @@ class MainWindow(ChromeWindow):
         self.current_wid = wid
         for card in self._cards:
             card.set_selected(card.workspace.wid == wid)
-        self.selected.clear()
         self._rebuild_rows()
 
     def _on_row_toggled(self, sid: str, checked: bool) -> None:
@@ -658,6 +681,43 @@ class MainWindow(ChromeWindow):
             self.selected.add(sid)
         else:
             self.selected.discard(sid)
+            self._drop_workspace_for_session(sid)
+        self._refresh_card_states()
+        self._update_action_bar()
+
+    def _on_card_toggled(self, wid: str, checked: bool) -> None:
+        workspace = self._workspace(wid)
+        if workspace is None:
+            return
+        sids = {s.sid for s in workspace.sessions}
+        if checked:
+            self.selected.update(sids)
+            self.selected_ws.add(wid)
+        else:
+            self.selected.difference_update(sids)
+            self.selected_ws.discard(wid)
+        for sid, row in self._rows.items():
+            if sid in sids:
+                row.set_checked(checked)
+        self._refresh_card_states()
+        self._update_action_bar()
+
+    def _drop_workspace_for_session(self, sid: str) -> None:
+        for workspace in self.workspaces:
+            if any(s.sid == sid for s in workspace.sessions):
+                self.selected_ws.discard(workspace.wid)
+                return
+
+    def _refresh_card_states(self) -> None:
+        for card in self._cards:
+            workspace = card.workspace
+            sids = [s.sid for s in workspace.sessions]
+            chosen = sum(1 for sid in sids if sid in self.selected)
+            checked = workspace.wid in self.selected_ws
+            card.set_check_state(checked, (not checked) and chosen > 0)
+
+    def _on_restart_toggled(self, value: bool) -> None:
+        self.settings.set_bool("restart_after_delete", value)
         self._update_action_bar()
 
     def _on_select_all(self, checked: bool) -> None:
@@ -667,6 +727,11 @@ class MainWindow(ChromeWindow):
                 self.selected.add(sid)
             else:
                 self.selected.discard(sid)
+        if not checked:
+            for workspace in self.workspaces:
+                if any(s.sid in self._rows for s in workspace.sessions):
+                    self.selected_ws.discard(workspace.wid)
+        self._refresh_card_states()
         self._update_action_bar()
 
     def _select_all_now(self) -> None:
@@ -674,8 +739,14 @@ class MainWindow(ChromeWindow):
             self._select_all.set_checked(True, emit=True)
 
     def _clear_selection(self) -> None:
+        self.selected.clear()
+        self.selected_ws.clear()
         self._select_all.set_checked(False)
-        self._on_select_all(False)
+        self._select_all.set_partial(False)
+        for row in self._rows.values():
+            row.set_checked(False)
+        self._refresh_card_states()
+        self._update_action_bar()
 
     def _manual_refresh(self) -> None:
         self._pinned = False
@@ -739,19 +810,33 @@ class MainWindow(ChromeWindow):
         if isinstance(QApplication.focusWidget(), QLineEdit):
             return
         sessions = self._selected_sessions()
-        if not sessions or self._busy:
+        workspace_ids = [wid for wid in self.selected_ws if self._workspace(wid) is not None]
+        if (not sessions and not workspace_ids) or self._busy:
             return
         items = [f"{s.title}（{s.rel_time}）" for s in sessions]
+        for wid in workspace_ids:
+            workspace = self._workspace(wid)
+            items.append(f"整个工作区：{workspace.title}")
+        if workspace_ids and sessions:
+            title = f"删除{len(sessions)}个对话和{len(workspace_ids)}个工作区？"
+        elif workspace_ids:
+            title = f"删除{len(workspace_ids)}个工作区？"
+        else:
+            title = f"删除{len(sessions)}个对话？"
+        message = "会话日志和缓存会被永久删除，无法恢复。"
+        if workspace_ids:
+            message += "工作区会从DSH列表中移除登记，文件夹本身保留。"
+        message += "workspace.json 会在写入前自动备份。"
         dialog = ConfirmDialog(
             self,
-            f"删除{len(sessions)}个对话？",
-            "会话日志和缓存会被永久删除，无法恢复。workspace.json 会在写入前自动备份一份。",
+            title,
+            message,
             items,
             confirm_label="删除",
         )
         if dialog.exec() != ConfirmDialog.Accepted:
             return
-        self._run_delete(sessions, [])
+        self._run_delete(sessions, workspace_ids)
 
     def _on_card_action(self, wid: str, action: str) -> None:
         workspace = self._workspace(wid)
@@ -817,6 +902,7 @@ class MainWindow(ChromeWindow):
         self._busy = False
         self._bar.set_target(1.0)
         self.selected.clear()
+        self.selected_ws.clear()
         QTimer.singleShot(600, self._leave_progress)
         if result.errors:
             self._last_details = "\n".join(result.errors)

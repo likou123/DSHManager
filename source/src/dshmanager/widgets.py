@@ -262,6 +262,7 @@ class CheckGlyph(QWidget):
         super().__init__(parent)
         self.setFixedSize(size, size)
         self._checked = False
+        self._partial = False
         self._hover = False
         self.setCursor(Qt.PointingHandCursor)
 
@@ -272,9 +273,19 @@ class CheckGlyph(QWidget):
         if self._checked == bool(value):
             return
         self._checked = bool(value)
+        if self._checked:
+            self._partial = False
         self.update()
         if emit:
             self.toggled.emit(self._checked)
+
+    def set_partial(self, value: bool) -> None:
+        """部分选中的横杠状态（用于「整个工作区」的半选）。"""
+        value = bool(value) and not self._checked
+        if self._partial == value:
+            return
+        self._partial = value
+        self.update()
 
     def mouseReleaseEvent(self, event) -> None:  # noqa: N802
         if event.button() == Qt.LeftButton:
@@ -305,6 +316,14 @@ class CheckGlyph(QWidget):
                 QPointF(w * 0.44, h * 0.68),
                 QPointF(w * 0.74, h * 0.33),
             ])
+        elif self._partial:
+            theme.fill_rounded(painter, theme.ACCENT, rect, 5)
+            pen = QPen(QColor(255, 255, 255))
+            pen.setWidthF(1.8)
+            pen.setCapStyle(Qt.RoundCap)
+            painter.setPen(pen)
+            w, h = self.width(), self.height()
+            painter.drawLine(QPointF(w * 0.28, h * 0.5), QPointF(w * 0.72, h * 0.5))
         else:
             theme.fill_rounded(painter, theme.WINDOW, rect, 5)
             color = theme.ACCENT if self._hover else theme.BORDER_STRONG
