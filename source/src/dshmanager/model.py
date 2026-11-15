@@ -46,22 +46,22 @@ def rel_time(epoch: float) -> str:
     if delta < 60:
         return "刚刚"
     if delta < 3600:
-        return f"{int(delta // 60)} 分钟前"
+        return f"{int(delta // 60)}分钟前"
     if delta < 86400:
-        return f"{int(delta // 3600)} 小时前"
+        return f"{int(delta // 3600)}小时前"
     if delta < 86400 * 30:
-        return f"{int(delta // 86400)} 天前"
+        return f"{int(delta // 86400)}天前"
     return time.strftime("%Y-%m-%d", time.localtime(epoch))
 
 
 def human_size(size: int) -> str:
     if size < 1024:
-        return f"{size} B"
+        return f"{size}B"
     if size < 1024 * 1024:
-        return f"{size / 1024:.0f} KB"
+        return f"{size / 1024:.0f}KB"
     if size < 1024 * 1024 * 1024:
-        return f"{size / 1024 / 1024:.1f} MB"
-    return f"{size / 1024 / 1024 / 1024:.2f} GB"
+        return f"{size / 1024 / 1024:.1f}MB"
+    return f"{size / 1024 / 1024 / 1024:.2f}GB"
 
 
 def norm_path(value: str) -> str:

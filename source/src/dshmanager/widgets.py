@@ -142,11 +142,12 @@ class GlyphButton(QWidget):
 class FlatButton(QWidget):
     clicked = Signal()
 
-    def __init__(self, text: str, primary: bool = False, parent: QWidget | None = None, height: int = 38, danger: bool = False):
+    def __init__(self, text: str, primary: bool = False, parent: QWidget | None = None, height: int = 38, danger: bool = False, auto_width: bool = False):
         super().__init__(parent)
         self._text = text
         self._primary = primary
         self._danger = danger
+        self._auto_width = auto_width
         self._hover = False
         self._pressed = False
         self._enabled = True
@@ -156,7 +157,14 @@ class FlatButton(QWidget):
 
     def set_text(self, text: str) -> None:
         self._text = text
+        if self._auto_width:
+            self.fit_to_text()
         self.update()
+
+    def fit_to_text(self, pad: int = 34, min_width: int = 56) -> None:
+        """按文字宽度定宽：字数相同的按钮会得到相同的长度。"""
+        metrics = QFontMetricsF(self.font())
+        self.setFixedWidth(max(min_width, int(metrics.horizontalAdvance(self._text)) + pad))
 
     def set_enabled_state(self, enabled: bool) -> None:
         self._enabled = enabled

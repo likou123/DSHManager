@@ -187,7 +187,7 @@ class WorkspaceCard(QWidget):
         meta_font = theme.font(8.0)
         metrics = QFontMetricsF(meta_font)
         count = len(self.workspace.sessions)
-        count_text = f"{count} 个对话" if count else "没有对话"
+        count_text = f"{count}个对话" if count else "没有对话"
         pill_w = metrics.horizontalAdvance(count_text) + 14
         pill_rect = QRectF(self.width() - 12 - pill_w, 33, pill_w, 17)
         pill_fill = theme.ACCENT_SOFT if self._selected else theme.SURFACE_STRONG
@@ -326,7 +326,7 @@ class DeleteWorker(QThread):
                 errors = store.delete_session_files(session)
                 result.errors.extend(errors)
                 result.deleted_sessions += 1
-            self.step.emit(0, StepState.DONE, f"{len(self.sessions)} 个")
+            self.step.emit(0, StepState.DONE, f"{len(self.sessions)}个")
 
             self.step.emit(1, StepState.WORKING, "清理中")
             data = store.load_json(wpath)
@@ -412,27 +412,27 @@ class MainWindow(ChromeWindow):
         self._sidebar_label.setGeometry(20, 66, 160, 22)
 
         self._cards_area, self._cards_body, self._cards_layout = make_scroll_area(self)
-        self._cards_area.setGeometry(10, 94, 232, 406)
+        self._cards_area.setGeometry(10, 94, 232, 462)
         self._cards_layout.setContentsMargins(0, 0, 6, 8)
         self._cards_layout.setSpacing(6)
         self._cards_layout.addStretch(1)
 
-        self._open_dir = FlatButton("打开数据目录", primary=False, parent=self, height=34)
-        self._open_dir.setGeometry(12, 558, 104, 32)
+        self._open_dir = FlatButton("打开数据目录", primary=False, parent=self, height=34, auto_width=True)
+        self._open_dir.fit_to_text()
+        self._open_dir.move(12, 608)
         self._open_dir.clicked.connect(self._open_data_dir)
 
-        self._about = FlatButton("关于", primary=False, parent=self, height=34)
-        self._about.setGeometry(120, 558, 104, 32)
+        self._about = FlatButton("关于", primary=False, parent=self, height=34, auto_width=True)
+        self._about.fit_to_text()
+        self._about.move(12 + self._open_dir.width() + 8, 608)
         self._about.clicked.connect(self._show_about)
 
-        self._add_ws = FlatButton("添加工作区", primary=True, parent=self, height=34)
-        self._add_ws.setGeometry(12, 516, 212, 34)
+        self._add_ws = FlatButton("添加工作区", primary=True, parent=self, height=34, auto_width=True)
+        self._add_ws.fit_to_text()
+        self._add_ws.move(12, 566)
         self._add_ws.clicked.connect(self._add_workspace_dialog)
 
-        self._version = QLabel("DSHManager v2.0.1", self)
-        self._version.setFont(theme.font(7.8))
-        self._version.setStyleSheet("color:#98A2B3;background:transparent;")
-        self._version.setGeometry(12, 618, 200, 18)
+
 
         # 右侧顶部
         self._search = SearchField(self)
@@ -509,14 +509,14 @@ class MainWindow(ChromeWindow):
         self._hint = QLabel("", self)
         self._hint.setFont(theme.font(8.8))
         self._hint.setStyleSheet("color:#667085;background:transparent;")
-        self._hint.setGeometry(272, 610, 420, 24)
+        self._hint.setGeometry(272, 609, 372, 28)
 
-        self._cancel_sel = FlatButton("取消选择", primary=False, parent=self)
+        self._cancel_sel = FlatButton("取消选择", primary=False, parent=self, auto_width=True)
         self._cancel_sel.setGeometry(660, 604, 100, 38)
         self._cancel_sel.clicked.connect(self._clear_selection)
         self._cancel_sel.set_enabled_state(False)
 
-        self._delete_btn = FlatButton("删除所选", primary=True, parent=self)
+        self._delete_btn = FlatButton("删除所选", primary=True, parent=self, auto_width=True)
         self._delete_btn.setGeometry(772, 604, 204, 38)
         self._delete_btn.clicked.connect(self._delete_selected)
         self._delete_btn.set_enabled_state(False)
@@ -556,8 +556,8 @@ class MainWindow(ChromeWindow):
             return
         if total:
             unregistered = [w for w in workspaces if w.unregistered]
-            suffix = f"（{len(unregistered)} 个未登记，可从卡片 ⋯ 菜单添加）" if unregistered else ""
-            self._set_banner(f"共 {len(workspaces)} 个工作区 · {total} 个对话" + suffix, BannerTone.INFO)
+            suffix = f"（{len(unregistered)}个未登记，可从卡片⋯菜单添加）" if unregistered else ""
+            self._set_banner(f"共{len(workspaces)}个工作区 · {total}个对话" + suffix, BannerTone.INFO)
         else:
             self._set_banner("还没有找到任何对话。", BannerTone.WARNING)
 
@@ -615,13 +615,17 @@ class MainWindow(ChromeWindow):
         self._delete_btn.set_text(f"删除所选（{n}）" if n else "删除所选")
         self._delete_btn.set_enabled_state(n > 0 and not self._busy)
         self._cancel_sel.set_enabled_state(n > 0)
-        self._sel_label.setText(f"已选 {n} 项" if n else "")
+        self._cancel_sel.fit_to_text()
+        delete_x = 976 - self._delete_btn.width()
+        self._delete_btn.move(delete_x, 604)
+        self._cancel_sel.move(delete_x - 8 - self._cancel_sel.width(), 604)
+        self._sel_label.setText(f"已选{n}项" if n else "")
         workspace = self._workspace(self.current_wid)
         if workspace is not None:
-            note = "　·　未登记到 DSH，可从卡片 ⋯ 菜单添加" if workspace.unregistered else ""
+            note = " · 未登记到DSH，可从卡片⋯菜单添加" if workspace.unregistered else ""
             if n == 0 and not workspace.unregistered:
-                note = "　·　数据目录 " + self.dsh_home
-            self._hint.setText(f"{workspace.title} · {len(workspace.sessions)} 个对话" + note)
+                note = " · 数据目录 " + self.dsh_home
+            self._hint.setText(f"{workspace.title} · {len(workspace.sessions)}个对话" + note)
         self._sync_select_all()
 
     def _sync_select_all(self) -> None:
@@ -716,7 +720,7 @@ class MainWindow(ChromeWindow):
             store.add_workspace(data, path, title, sids)
             store.atomic_write(self.store_path, store.dump_json(data))
             self._pinned = True
-            self._set_banner(f"已添加工作区「{title}」，关联 {len(sids)} 个对话", BannerTone.SUCCESS, pin=True)
+            self._set_banner(f"已添加工作区「{title}」，关联{len(sids)}个对话", BannerTone.SUCCESS, pin=True)
             self.refresh()
         except Exception as exc:  # noqa: BLE001
             self._last_details = repr(exc)
@@ -740,7 +744,7 @@ class MainWindow(ChromeWindow):
         items = [f"{s.title}（{s.rel_time}）" for s in sessions]
         dialog = ConfirmDialog(
             self,
-            f"删除 {len(sessions)} 个对话？",
+            f"删除{len(sessions)}个对话？",
             "会话日志和缓存会被永久删除，无法恢复。workspace.json 会在写入前自动备份一份。",
             items,
             confirm_label="删除",
@@ -773,7 +777,7 @@ class MainWindow(ChromeWindow):
         items = [f"{s.title}（{s.rel_time}）" for s in sessions[:8]]
         dialog = ConfirmDialog(
             self,
-            f"删除「{workspace.title}」的全部 {len(sessions)} 个对话？",
+            f"删除「{workspace.title}」的全部{len(sessions)}个对话？",
             "会话日志和缓存会被永久删除，无法恢复；工作区文件夹本身会保留。",
             items,
             confirm_label="全部删除",
@@ -816,11 +820,11 @@ class MainWindow(ChromeWindow):
         QTimer.singleShot(600, self._leave_progress)
         if result.errors:
             self._last_details = "\n".join(result.errors)
-            self._set_banner(f"完成，但有 {len(result.errors)} 个问题，点右侧查看详情。",
+            self._set_banner(f"完成，但有{len(result.errors)}个问题，点右侧查看详情。",
                              BannerTone.WARNING, "查看详情")
         else:
             self._set_banner(
-                f"已删除 {result.deleted_sessions} 个对话"
+                f"已删除{result.deleted_sessions}个对话"
                 + ("，并移除了工作区登记" if result.deleted_workspaces else "")
                 + ("，备份：{}".format(os.path.basename(result.backup)) if result.backup else ""),
                 BannerTone.SUCCESS,

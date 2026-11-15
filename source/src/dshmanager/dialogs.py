@@ -111,7 +111,7 @@ class AboutDialog(ChromeDialog):
         title = _Label(self, "DSH 对话管理器", 13.0, True, theme.TEXT)
         title.setGeometry(28, 44, 460, 30)
 
-        sub = _Label(self, f"版本 {version}", 9.0, False, theme.MUTED)
+        sub = _Label(self, f"DSHManager v{version}", 9.0, False, theme.MUTED)
         sub.setGeometry(28, 78, 460, 22)
 
         body = _Label(

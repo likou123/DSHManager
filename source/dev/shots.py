@@ -37,7 +37,7 @@ def step1():
 
     dialog = ConfirmDialog(
         window,
-        "删除 3 个对话？",
+        "删除3个对话？",
         "会话日志和缓存会被永久删除，无法恢复。workspace.json 会在写入前自动备份一份。",
         [r.session.title for r in rows[:3]],
     )
@@ -54,7 +54,7 @@ def step2(dialog):
     window._steps[1].set_state("done", "已清理")
     window._steps[2].set_state("working", "写入中")
     window._bar.set_target(0.66)
-    window._set_banner("已删除 3 个对话，备份：workspace.json.bak-20261114230000", "success")
+    window._set_banner("已删除3个对话，备份workspace.json.bak-20261114230000", "success")
     QTimer.singleShot(300, lambda: (save(window, "04-progress.png"), app.quit()))
 
 
