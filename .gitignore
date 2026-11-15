@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# 虚拟环境
+source/.venv/
+
+# 构建产物
+source/build/DSHManager.exe
+source/build/*.spec
+DSHManager.exe
+*.pdb
+
+# 开发临时产物
+source/dev/out/
+*.log
+
+# 生成物
+source/src/dshmanager/assets/
+
+# 系统
+Thumbs.db
+.DS_Store
+# 本地文件（不进仓库）
+AGENTS.md
+REPORT-*.md
+screenshots/05-*.png

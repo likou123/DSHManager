@@ -1,0 +1,4 @@
+PySide6-Essentials==6.12.0
+pyinstaller==6.22.3
+zstandard>=0.25.0
+pillow>=10.0.0
