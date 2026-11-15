@@ -116,10 +116,10 @@ class AboutDialog(ChromeDialog):
 
         body = _Label(
             self,
-            "一个用来整理 DeepSeek Harness 本地对话的小工具。\\n"
-            "按工作区查看所有对话，支持搜索、批量删除，删完可以自动重启 DSH。\\n\\n"
-            f"数据目录：{dsh_home}\\n"
-            "修改前会自动备份 workspace.json；被删除的对话无法恢复。",
+            "整理 DeepSeek Harness 保存在本机的对话：按工作区浏览，支持搜索与批量删除。\n"
+            "删除完成后可以自动重启 DSH。\n\n"
+            f"数据目录：{dsh_home}\n"
+            "写入前会自动备份 workspace.json；被删除的对话无法恢复。",
             8.8, False, theme.MUTED,
         )
         body.setGeometry(28, 106, 504, 150)

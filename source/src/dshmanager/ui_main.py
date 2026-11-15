@@ -412,24 +412,24 @@ class MainWindow(ChromeWindow):
         self._sidebar_label.setGeometry(20, 66, 160, 22)
 
         self._cards_area, self._cards_body, self._cards_layout = make_scroll_area(self)
-        self._cards_area.setGeometry(10, 94, 232, 414)
+        self._cards_area.setGeometry(10, 94, 232, 406)
         self._cards_layout.setContentsMargins(0, 0, 6, 8)
         self._cards_layout.setSpacing(6)
         self._cards_layout.addStretch(1)
 
         self._open_dir = FlatButton("打开数据目录", primary=False, parent=self, height=34)
-        self._open_dir.setGeometry(122, 520, 100, 34)
+        self._open_dir.setGeometry(12, 558, 104, 32)
         self._open_dir.clicked.connect(self._open_data_dir)
 
         self._about = FlatButton("关于", primary=False, parent=self, height=34)
-        self._about.setGeometry(12, 564, 70, 32)
+        self._about.setGeometry(120, 558, 104, 32)
         self._about.clicked.connect(self._show_about)
 
         self._add_ws = FlatButton("添加工作区", primary=True, parent=self, height=34)
-        self._add_ws.setGeometry(12, 520, 104, 34)
+        self._add_ws.setGeometry(12, 516, 212, 34)
         self._add_ws.clicked.connect(self._add_workspace_dialog)
 
-        self._version = QLabel("DSHManager v2.0", self)
+        self._version = QLabel("DSHManager v2.0.1", self)
         self._version.setFont(theme.font(7.8))
         self._version.setStyleSheet("color:#98A2B3;background:transparent;")
         self._version.setGeometry(12, 618, 200, 18)
