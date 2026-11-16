@@ -384,7 +384,7 @@ class DeleteWorker(QThread):
 
 # ================================================================ 主窗口
 class MainWindow(ChromeWindow):
-    def __init__(self) -> None:
+    def __init__(self, preloaded: tuple | None = None) -> None:
         super().__init__(WIN_W, WIN_H, "DSH对话管理器")
         icon_path = theme.resource_path("dshmanager.ico")
         if os.path.exists(icon_path):
@@ -404,16 +404,26 @@ class MainWindow(ChromeWindow):
         self._busy = False
         self._pinned = False
         self._build_ui()
-        QTimer.singleShot(60, self.refresh)
+        if preloaded is not None:
+            workspaces, store_path = preloaded
+            self.store_path = store_path
+            self.workspaces = workspaces
+            wids = [w.wid for w in workspaces]
+            self.current_wid = wids[0] if wids else ""
+            self._rebuild_cards()
+            self._rebuild_rows()
+            self._announce_summary(workspaces)
+        else:
+            QTimer.singleShot(60, self.refresh)
 
     # ------------------------------------------------------------ 构建
     def _build_ui(self) -> None:
-        self._logo = LogoBadge(self, 30)
-        self._logo.move(20, 11)
+        self._logo = LogoBadge(self, 40)
+        self._logo.move(14, 6)
         self._title = QLabel("DSH对话管理器", self)
         self._title.setFont(theme.font(10.6, bold=True))
         self._title.setStyleSheet("color:#101828;background:transparent;")
-        self._title.setGeometry(58, 11, 300, 30)
+        self._title.setGeometry(64, 7, 320, 38)
 
         self._close = GlyphButton("close", self)
         self._close.move(WIN_W - 46, 11)
@@ -563,6 +573,9 @@ class MainWindow(ChromeWindow):
             self.current_wid = wids[0] if wids else ""
         self._rebuild_cards()
         self._rebuild_rows()
+        self._announce_summary(workspaces)
+
+    def _announce_summary(self, workspaces) -> None:
         total = sum(len(w.sessions) for w in workspaces)
         if self._pinned:
             return

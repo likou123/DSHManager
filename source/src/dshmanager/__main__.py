@@ -44,7 +44,7 @@ def main() -> int:
 
     from PySide6.QtWidgets import QApplication
 
-    from . import theme
+    from . import model, store, theme
     from .ui_main import MainWindow
 
     app = QApplication(sys.argv)
@@ -52,7 +52,16 @@ def main() -> int:
     app.setApplicationDisplayName("DSH对话管理器")
     app.setFont(theme.font(9.3))
 
-    window = MainWindow()
+    # 先把工作区扫描完，再显示窗口：避免窗口先出现、列表后填充造成的“卡一下”
+    dsh_home = os.environ.get("DSH_HOME") or os.path.join(os.path.expanduser("~"), ".dsh")
+    preloaded = None
+    try:
+        path = store.workspace_path(dsh_home)
+        preloaded = (model.scan(dsh_home, store.load_json(path)), path)
+    except Exception:
+        preloaded = None
+
+    window = MainWindow(preloaded)
     window.show()
     return app.exec()
 

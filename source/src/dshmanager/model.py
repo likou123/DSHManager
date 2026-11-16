@@ -121,8 +121,10 @@ def scan(dsh_home: str, store: dict) -> list[Workspace]:
     workspaces_raw = ((store.get("tables") or {}).get("workspaces") or {})
     default_id = str(global_cfg.get("defaultWorkspaceId") or "")
 
-    sessions: dict[str, Session] = {}
-    for project_dir, session_dir in _session_dirs(sessions_root):
+    dirs = _session_dirs(sessions_root)
+
+    def build(item: tuple[str, str]) -> Session | None:
+        project_dir, session_dir = item
         log_path, mtime = _latest_log(session_dir)
         fallback = os.path.basename(session_dir)
         facts = read_session_facts(log_path, fallback) if log_path else None
@@ -132,7 +134,7 @@ def scan(dsh_home: str, store: dict) -> list[Workspace]:
         last_active = float(mtime or 0.0)
         size_bytes = 0
         try:
-            for root, _dirs, names in os.walk(session_dir):
+            for root, _sub, names in os.walk(session_dir):
                 for name in names:
                     try:
                         size_bytes += os.path.getsize(os.path.join(root, name))
@@ -141,10 +143,9 @@ def scan(dsh_home: str, store: dict) -> list[Workspace]:
         except OSError:
             pass
         sid = facts.session_id or fallback
-        title = facts.title or "（未命名对话）"
-        sessions[sid] = Session(
+        return Session(
             sid=sid,
-            title=title,
+            title=facts.title or "（未命名对话）",
             rel_time=rel_time(last_active),
             size_text=human_size(size_bytes),
             last_active=last_active,
@@ -156,6 +157,12 @@ def scan(dsh_home: str, store: dict) -> list[Workspace]:
             archived=sid in archived,
             pinned=sid in pinned,
         )
+
+    sessions: dict[str, Session] = {}
+    for item in dirs:
+        session = build(item)
+        if session is not None:
+            sessions[session.sid] = session
 
     used: set[str] = set()
     result: list[Workspace] = []
