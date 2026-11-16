@@ -1,4 +1,4 @@
-"""结束并重新拉起 DSH：PID 探测、等待退出、taskkill 诊断、UAC 重试。"""
+"""结束并重新拉起DSH：PID探测、等待退出、taskkill诊断、UAC重试。"""
 
 from __future__ import annotations
 
@@ -101,7 +101,7 @@ def _command_prefix() -> list[str]:
 
 
 def spawn_waiter(exe: str, pids: list[int]) -> None:
-    """起一个脱离本进程的 waiter：等这些 PID 全部退出后再拉起 exe。"""
+    """起一个脱离本进程的waiter：等这些PID全部退出后再拉起exe。"""
     args = _command_prefix() + ["--relaunch-waiter", exe] + [str(p) for p in pids]
     subprocess.Popen(
         args,

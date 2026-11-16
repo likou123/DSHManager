@@ -1,4 +1,4 @@
-"""设计令牌：Soft Minimal Desktop Utility（对齐 MagDsh 的 theme.py）。"""
+"""设计令牌：Soft Minimal Desktop Utility（对齐MagDsh的theme.py）。"""
 
 from __future__ import annotations
 

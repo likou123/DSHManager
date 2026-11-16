@@ -108,7 +108,7 @@ class DetailsDialog(ChromeDialog):
 class AboutDialog(ChromeDialog):
     def __init__(self, parent, version: str, dsh_home: str):
         super().__init__(560, 372, "关于", parent)
-        title = _Label(self, "DSH 对话管理器", 13.0, True, theme.TEXT)
+        title = _Label(self, "DSH对话管理器", 13.0, True, theme.TEXT)
         title.setGeometry(28, 44, 460, 30)
 
         sub = _Label(self, f"DSHManager v{version}", 9.0, False, theme.MUTED)
@@ -116,10 +116,10 @@ class AboutDialog(ChromeDialog):
 
         body = _Label(
             self,
-            "整理 DeepSeek Harness 保存在本机的对话：按工作区浏览，支持搜索与批量删除。\n"
-            "删除完成后可以自动重启 DSH。\n\n"
+            "整理DeepSeek Harness保存在本机的对话：按工作区浏览，支持搜索与批量删除。\n"
+            "删除完成后可以自动重启DSH。\n\n"
             f"数据目录：{dsh_home}\n"
-            "写入前会自动备份 workspace.json；被删除的对话无法恢复。",
+            "写入前会自动备份workspace.json；被删除的对话无法恢复。",
             8.8, False, theme.MUTED,
         )
         body.setGeometry(28, 106, 504, 150)

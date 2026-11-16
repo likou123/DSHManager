@@ -107,11 +107,11 @@ def _latest_log(session_dir: str) -> tuple[str, int]:
 
 
 def scan(dsh_home: str, store: dict) -> list[Workspace]:
-    """把 workspace.json + sessions 目录合成工作区列表。
+    """把workspace.json + sessions目录合成工作区列表。
 
-    已登记的工作区按 workspace.json 顺序输出；磁盘上存在但没有登记、
+    已登记的工作区按workspace.json顺序输出；磁盘上存在但没有登记、
     或者登记里没有引用到的会话，会按会话记录的工作目录自动聚合成
-    「未登记工作区」，交给用户在界面上决定是否登记进 DSH。
+    「未登记工作区」，交给用户在界面上决定是否登记进DSH。
     """
     sessions_root = os.path.join(dsh_home, "sessions")
     cache_root = os.path.join(dsh_home, "storages", "session_projcache", "sessions")

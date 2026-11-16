@@ -1,4 +1,4 @@
-"""多帧 zstd 会话日志解码：只取会话头与标题，避免整份日志解压。"""
+"""多帧zstd会话日志解码：只取会话头与标题，避免整份日志解压。"""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ class SessionFacts:
 
 
 def _decode(buf: bytes) -> str:
-    """把一段（可能由多个独立帧首尾相接的）zstd 数据解成长文本。"""
+    """把一段（可能由多个独立帧首尾相接的）zstd数据解成长文本。"""
     if not buf:
         return ""
     try:

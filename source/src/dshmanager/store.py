@@ -1,4 +1,4 @@
-"""workspace.json 的读写、备份、原子写与删除语义。"""
+"""workspace.json的读写、备份、原子写与删除语义。"""
 
 from __future__ import annotations
 
@@ -62,7 +62,7 @@ def delete_session_files(session) -> list[str]:
 
 
 def clean_references(store: dict, session_ids: set[str], workspace_ids: set[str]) -> bool:
-    """从 workspace.json 里摘掉会话/工作区引用，返回是否有改动。"""
+    """从workspace.json里摘掉会话/工作区引用，返回是否有改动。"""
     changed = False
     global_cfg = store.setdefault("global", {})
     tables = store.setdefault("tables", {})
@@ -95,7 +95,7 @@ def clean_references(store: dict, session_ids: set[str], workspace_ids: set[str]
                 changed = True
         if changed:
             tables["workspaces"] = workspaces
-            # defaultWorkspaceId 保持原样：与 DSH 语义一致，删了也不清空
+            # defaultWorkspaceId保持原样：与DSH语义一致，删了也不清空
     return changed
 
 
@@ -103,7 +103,7 @@ def workspace_path(dsh_home: str) -> str:
     return os.path.join(dsh_home, "storages", "workspace.json")
 
 def add_workspace(store: dict, path: str, title: str, session_ids: list[str]) -> str:
-    """把一个新工作区登记进 workspace.json，返回新的 workspace id。"""
+    """把一个新工作区登记进workspace.json，返回新的workspace id。"""
     import uuid
     from datetime import datetime, timezone
 

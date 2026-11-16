@@ -151,7 +151,7 @@ class WorkspaceCard(QWidget):
             "QMenu::separator{height:1px;background:#EDF2F8;margin:4px 10px;}"
         )
         if self.workspace.unregistered:
-            act_register = QAction("添加到 DSH 配置", menu)
+            act_register = QAction("添加到DSH配置", menu)
             act_register.triggered.connect(lambda: self.action.emit(self.workspace.wid, "register"))
             menu.addAction(act_register)
             menu.addSeparator()
@@ -356,10 +356,10 @@ class DeleteWorker(QThread):
                 exe = restart.find_exe()
                 pids = restart.list_pids() if exe else []
                 if not exe:
-                    self.step.emit(3, StepState.FAILED, "未找到 DSH")
-                    result.errors.append("没有找到 DeepSeek Harness.exe")
+                    self.step.emit(3, StepState.FAILED, "未找到DSH")
+                    result.errors.append("没有找到DeepSeek Harness.exe")
                 elif not pids:
-                    self.step.emit(3, StepState.DONE, "DSH 未运行")
+                    self.step.emit(3, StepState.DONE, "DSH未运行")
                 else:
                     restart.spawn_waiter(exe, pids)
                     ok, code, detail = restart.kill_dsh()
@@ -367,10 +367,10 @@ class DeleteWorker(QThread):
                         self.step.emit(3, StepState.DONE, "已重启")
                     elif code in (1, 5) or "拒绝访问" in detail or "Access is denied" in detail:
                         self.step.emit(3, StepState.FAILED, "需要管理员权限")
-                        result.errors.append(f"结束 DSH 被拒绝（exit {code}）：{detail}")
+                        result.errors.append(f"结束DSH被拒绝（exit {code}）：{detail}")
                     else:
                         self.step.emit(3, StepState.FAILED, f"exit {code}")
-                        result.errors.append(f"taskkill 失败（exit {code}）：{detail}")
+                        result.errors.append(f"taskkill失败（exit {code}）：{detail}")
             else:
                 self.step.emit(3, StepState.DONE, "已跳过")
 
@@ -382,7 +382,7 @@ class DeleteWorker(QThread):
 # ================================================================ 主窗口
 class MainWindow(ChromeWindow):
     def __init__(self) -> None:
-        super().__init__(WIN_W, WIN_H, "DSH 对话管理器")
+        super().__init__(WIN_W, WIN_H, "DSH对话管理器")
         icon_path = theme.resource_path("dshmanager.ico")
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
@@ -407,7 +407,7 @@ class MainWindow(ChromeWindow):
     def _build_ui(self) -> None:
         self._logo = LogoBadge(self, 30)
         self._logo.move(20, 11)
-        self._title = QLabel("DSH 对话管理器", self)
+        self._title = QLabel("DSH对话管理器", self)
         self._title.setFont(theme.font(10.6, bold=True))
         self._title.setStyleSheet("color:#101828;background:transparent;")
         self._title.setGeometry(58, 11, 300, 30)
@@ -455,7 +455,7 @@ class MainWindow(ChromeWindow):
         self._restart_toggle.move(690, 70)
         self._restart_toggle.toggled.connect(self._on_restart_toggled)
 
-        self._restart_label = QLabel("删除后自动重启 DSH", self)
+        self._restart_label = QLabel("删除后自动重启DSH", self)
         self._restart_label.setFont(theme.font(8.6))
         self._restart_label.setStyleSheet("color:#667085;background:transparent;")
         self._restart_label.setGeometry(740, 70, 210, 24)
@@ -499,7 +499,7 @@ class MainWindow(ChromeWindow):
         self._bar = AccentProgress(self._progress)
         self._bar.setGeometry(20, 18, 684, 4)
         self._steps = []
-        titles = ["删除对话文件", "清理 workspace.json 引用", "备份并写盘", "重启 DeepSeek Harness"]
+        titles = ["删除对话文件", "清理workspace.json引用", "备份并写盘", "重启DeepSeek Harness"]
         for index, text in enumerate(titles):
             row = StatusRow(text, "", self._progress)
             row.setGeometry(12, 36 + index * 52, 700, 52)
@@ -775,7 +775,7 @@ class MainWindow(ChromeWindow):
         self._register_workspace(path)
 
     def _register_workspace(self, path: str) -> None:
-        """把文件夹登记进 workspace.json，并挂上目录匹配的对话。"""
+        """把文件夹登记进workspace.json，并挂上目录匹配的对话。"""
         if self._busy or not path:
             return
         try:
@@ -826,7 +826,7 @@ class MainWindow(ChromeWindow):
         message = "会话日志和缓存会被永久删除，无法恢复。"
         if workspace_ids:
             message += "工作区会从DSH列表中移除登记，文件夹本身保留。"
-        message += "workspace.json 会在写入前自动备份。"
+        message += "workspace.json会在写入前自动备份。"
         dialog = ConfirmDialog(
             self,
             title,
@@ -851,7 +851,7 @@ class MainWindow(ChromeWindow):
             dialog = ConfirmDialog(
                 self,
                 f"移除工作区「{workspace.title}」？",
-                "只从 DSH 的列表里移除登记，工作区文件夹和对话日志都会保留。",
+                "只从DSH的列表里移除登记，工作区文件夹和对话日志都会保留。",
                 [],
                 confirm_label="移除",
             )

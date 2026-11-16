@@ -1,4 +1,4 @@
-"""入口：--relaunch-waiter 隐藏模式 / --selftest 无界面自检 / 正常启动图形界面。"""
+"""入口：--relaunch-waiter隐藏模式 / --selftest无界面自检 / 正常启动图形界面。"""
 
 from __future__ import annotations
 
@@ -48,8 +48,8 @@ def main() -> int:
     from .ui_main import MainWindow
 
     app = QApplication(sys.argv)
-    app.setApplicationName("DSH 对话管理器")
-    app.setApplicationDisplayName("DSH 对话管理器")
+    app.setApplicationName("DSH对话管理器")
+    app.setApplicationDisplayName("DSH对话管理器")
     app.setFont(theme.font(9.3))
 
     window = MainWindow()

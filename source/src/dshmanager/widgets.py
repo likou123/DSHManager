@@ -1,4 +1,4 @@
-"""自绘控件库：Soft Minimal Desktop Utility 风格（对齐 MagDsh）。"""
+"""自绘控件库：Soft Minimal Desktop Utility风格（对齐MagDsh）。"""
 
 from __future__ import annotations
 
