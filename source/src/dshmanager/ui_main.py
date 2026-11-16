@@ -79,7 +79,7 @@ class LogoBadge(QWidget):
     def __init__(self, parent: QWidget | None = None, size: int = 30):
         super().__init__(parent)
         self.setFixedSize(size, size)
-        self._pixmap = load_dsh_icon(size)
+        self._pixmap = load_dsh_icon(size * 2)  # 超采样：高分屏下保持清晰
 
     def paintEvent(self, event) -> None:  # noqa: N802
         painter = QPainter(self)
