@@ -57,6 +57,12 @@ class SettingsStore:
 
 # ================================================================ 图标
 def load_dsh_icon(size: int = 30) -> QPixmap | None:
+    """优先用自带的 logo，缺省时退回 DSH 自己的可执行文件图标。"""
+    bundled = theme.resource_path("dshmanager.png")
+    if os.path.exists(bundled):
+        pixmap = QPixmap(bundled)
+        if not pixmap.isNull():
+            return pixmap.scaled(size, size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
     exe = restart.find_exe()
     if not exe:
         return None
@@ -65,9 +71,6 @@ def load_dsh_icon(size: int = 30) -> QPixmap | None:
         if icon.isNull():
             return None
         return icon.pixmap(size, size)
-    except Exception:
-        return None
-
     except Exception:
         return None
 
