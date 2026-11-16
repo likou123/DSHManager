@@ -1,4 +1,4 @@
-# DSHManager
+# <img src="source/src/dshmanager/assets/dshmanager.png" width="72" align="absmiddle" alt="logo"> DSHManager
 
 > 一个安静的小工具：把 DeepSeek Harness 的本地对话整理得干干净净。
 
